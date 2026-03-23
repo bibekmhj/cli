@@ -259,3 +259,14 @@ class TestDownloads:
                 assert os.listdir('.') == [expected_filename]
             finally:
                 os.chdir(orig_cwd)
+                
+    def test_download_gzip_no_false_incomplete(httpbin):
+    #Regression test for https://github.com/httpie/cli/issues/1642
+    #Content-Encoding: gzip must not trigger a false "Incomplete download" error.
+        r = http(
+            '--download',
+            httpbin + '/gzip',   # returns gzip-compressed JSON
+            env=MockEnvironment(),
+        )
+        assert 'Incomplete download' not in r.stderr
+        assert r.exit_status == ExitStatus.SUCCESS            
